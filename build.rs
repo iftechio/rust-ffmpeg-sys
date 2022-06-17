@@ -9,6 +9,7 @@ use std::io::{self, BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::process::Command;
 use std::str;
+use std::ffi::OsStr;
 
 use bindgen::callbacks::{
     EnumVariantCustomBehavior, EnumVariantValue, IntKind, MacroParsingBehavior, ParseCallbacks,
@@ -484,6 +485,12 @@ fn check_features(
         .get_compiler()
         .to_command();
 
+    compiler.arg("-v");
+    compiler.env_clear();
+    if let Ok(developer_dir) = &env::var("DEVELOPER_DIR") {
+       compiler.env("DEVELOPER_DIR", developer_dir);
+       compiler.env("SDKROOT", format!("{}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk", developer_dir));
+    }
     for dir in include_paths {
         compiler.arg("-I");
         compiler.arg(dir.to_string_lossy().into_owned());
@@ -677,7 +684,10 @@ fn main() {
     }
     // Use prebuilt library
     else if let Ok(ffmpeg_dir) = env::var("FFMPEG_DIR") {
-        let ffmpeg_dir = PathBuf::from(ffmpeg_dir);
+        let mut ffmpeg_dir = PathBuf::from(ffmpeg_dir);
+        if ffmpeg_dir.is_relative() {
+            ffmpeg_dir = std::fs::canonicalize(env::current_dir().unwrap().join(ffmpeg_dir)).unwrap();
+        }
         println!(
             "cargo:rustc-link-search=native={}",
             ffmpeg_dir.join("lib").to_string_lossy()
@@ -1229,7 +1239,7 @@ fn main() {
         .header(search_include(&include_paths, "libavutil/imgutils.h"))
         .header(search_include(&include_paths, "libavutil/lfg.h"))
         .header(search_include(&include_paths, "libavutil/log.h"))
-        .header(search_include(&include_paths, "libavutil/lzo.h"))
+        // .header(search_include(&include_paths, "libavutil/lzo.h"))
         .header(search_include(&include_paths, "libavutil/macros.h"))
         .header(search_include(&include_paths, "libavutil/mathematics.h"))
         .header(search_include(&include_paths, "libavutil/md5.h"))
