@@ -41,7 +41,6 @@ pub const AV_CH_TOP_SIDE_RIGHT: libc::c_ulonglong = 137438953472;
 pub const AV_CH_BOTTOM_FRONT_CENTER: libc::c_ulonglong = 274877906944;
 pub const AV_CH_BOTTOM_FRONT_LEFT: libc::c_ulonglong = 549755813888;
 pub const AV_CH_BOTTOM_FRONT_RIGHT: libc::c_ulonglong = 1099511627776;
-pub const AV_CH_LAYOUT_NATIVE: libc::c_ulonglong = 9223372036854775808;
 pub const AV_CH_LAYOUT_MONO: libc::c_ulonglong = 4;
 pub const AV_CH_LAYOUT_STEREO: libc::c_ulonglong = 3;
 pub const AV_CH_LAYOUT_2POINT1: libc::c_ulonglong = 11;
