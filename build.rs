@@ -144,6 +144,8 @@ impl ParseCallbacks for Callbacks {
         let dummy_codec_id_prefix = "AV_CODEC_ID_FIRST_";
         if original_variant_name.starts_with(dummy_codec_id_prefix) {
             Some(EnumVariantCustomBehavior::Constify)
+        } else if original_variant_name.starts_with("AV_PIX_FMT_XVMC") {
+            Some(EnumVariantCustomBehavior::Hide)
         } else {
             None
         }
