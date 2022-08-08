@@ -31,6 +31,40 @@ impl Library {
     }
 }
 
+fn sdk_path(target: &str) -> Result<String, std::io::Error> {
+    let sdk = if vec![
+        "x86_64-apple-ios",
+        "i386-apple-ios",
+        "aarch64-apple-ios-sim",
+        "aarch64-apple-ios",
+        "aarch64-apple-darwin",
+        "x86_64-apple-darwin",
+    ]
+    .contains(&target)
+    {
+        "iphonesimulator"
+    } else if target == "aarch64-apple-ios"
+        || target == "armv7-apple-ios"
+        || target == "armv7s-apple-ios"
+    {
+        "iphoneos"
+    } else if target == "aarch-apple-darwin" 
+        || target == "x86_64-apple-darwin"
+    {
+        "macos"
+    } else {
+        unreachable!();
+    };
+
+    let output = Command::new("xcrun")
+        .args(&["--sdk", sdk, "--show-sdk-path"])
+        .output()?
+        .stdout;
+    let prefix_str = std::str::from_utf8(&output).expect("invalid output from `xcrun`");
+    Ok(prefix_str.trim_end().to_string())
+}
+
+
 static LIBRARIES: &[Library] = &[
     Library {
         name: "avcodec",
@@ -1185,7 +1219,7 @@ fn main() {
             .header(search_include(&include_paths, "libavcodec/dv_profile.h"))
             .header(search_include(&include_paths, "libavcodec/avfft.h"))
             .header(search_include(&include_paths, "libavcodec/vorbis_parser.h"));
-        if cfg!(macos) || cfg!(target_os = "ios") {
+        if cfg!(target_os = "macos") || cfg!(target_os = "ios") {
             builder = builder.header(search_include(&include_paths, "libavcodec/videotoolbox.h"))
         }
 
@@ -1287,6 +1321,11 @@ fn main() {
         maybe_search_include(&include_paths, "libavutil/hwcontext_drm.h")
     {
         builder = builder.header(hwcontext_drm_header);
+    }
+
+    if cfg!(target_os = "macos") || cfg!(target_os = "ios") {
+        let sdk = sdk_path(&std::env::var("TARGET").unwrap()).unwrap();
+        builder = builder.clang_args(["-isysroot", &sdk]);
     }
 
     // Finish the builder and generate the bindings.
