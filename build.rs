@@ -1185,7 +1185,7 @@ fn main() {
             .header(search_include(&include_paths, "libavcodec/dv_profile.h"))
             .header(search_include(&include_paths, "libavcodec/avfft.h"))
             .header(search_include(&include_paths, "libavcodec/vorbis_parser.h"));
-        if cfg!(macos) {
+        if cfg!(macos) || cfg!(target_os = "ios") {
             builder = builder.header(search_include(&include_paths, "libavcodec/videotoolbox.h"))
         }
 
@@ -1268,7 +1268,7 @@ fn main() {
         .header(search_include(&include_paths, "libavutil/twofish.h"))
         .header(search_include(&include_paths, "libavutil/avutil.h"))
         .header(search_include(&include_paths, "libavutil/xtea.h"));
-    if cfg!(target_os = "macos") {
+    if cfg!(target_os = "macos") || cfg!(target_os = "ios") {
         builder = builder.header(search_include(&include_paths, "libavutil/hwcontext_videotoolbox.h"));
     }
     if env::var("CARGO_FEATURE_POSTPROC").is_ok() {
